@@ -1,7 +1,7 @@
 <?php
 
 //vendor
-require_once "../../vendor/autoload.php";
+//require_once "../../vendor/autoload.php";
 
 //api key for google maps
 $keymaps = "AIzaSyCsCBbEkLxSGhKjAsW4S0Q3LnNtvuxlliA";
