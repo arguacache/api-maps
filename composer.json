@@ -1,0 +1,5 @@
+{
+    "require": {
+        "stevenmaguire/yelp-php": "^2.1"
+    }
+}
