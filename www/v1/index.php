@@ -6,9 +6,6 @@
 //api key for google maps
 $keymaps = "AIzaSyCsCBbEkLxSGhKjAsW4S0Q3LnNtvuxlliA";
 
-//get the current location of the user with ip
-$current_location = file_get_contents("http://ip-api.com/json");
-
 if(isset($_GET['ajax']))
 {
     if($_GET['ajax'] == "getmaps")
@@ -72,8 +69,7 @@ if(isset($_GET['ajax']))
             if(!isset($_GET['place']) || $_GET['place'] == 1)
             {
                 //use current location
-                $currentlocationdecode = json_decode($current_location, true);
-                $location = $currentlocationdecode['lat'].",".$currentlocationdecode['lon'];
+                $location = $_GET['coordinates'];
             }
             else
             {
