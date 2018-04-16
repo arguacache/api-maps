@@ -1,7 +1,7 @@
 <?php
 
 //vendor
-//require_once "../../vendor/autoload.php";
+require_once "../../vendor/autoload.php";
 
 //api key for google maps
 $keymaps = "AIzaSyCsCBbEkLxSGhKjAsW4S0Q3LnNtvuxlliA";
@@ -154,7 +154,124 @@ if(isset($_GET['ajax']))
     }
     else if($_GET['ajax'] == "yelpreview")
     {
-        
+        //first search the info of the place again
+        $placeid = $_GET['placeid'];
+        $url = 'https://maps.googleapis.com/maps/api/place/details/json?placeid=' . $placeid . '&key=' . $keymaps;
+
+        $apicall = json_decode(file_get_contents($url), true);
+
+        //with the results foreach of the address components
+        foreach ($apicall['result']['address_components'] as $value) 
+        {
+            //its the city
+            if($value['types'][0] == 'locality')
+            {
+                //separate with space
+                $str = explode(' ',$value['long_name']);
+
+                //concat with %20 for the api call
+                $city = implode('%20',$str);
+            }
+            //its the state
+            else if($value['types'][0] == 'administrative_area_level_1')
+            {
+                //separate with space
+                $str = explode(' ',$value['short_name']);
+
+                //concat with %20 for the api call
+                $state = implode('%20',$str);
+            }
+            //its the country
+            else if($value['types'][0] == 'country')
+            {
+                //separate with space
+                $str = explode(' ',$value['short_name']);
+
+                //concat with %20 for the api call
+                $country = implode('%20',$str);
+            }
+        }
+
+        //separate with space
+        $str = explode(' ',$apicall['result']['name']);
+
+        //concat with %20 for the api call
+        $name = implode('%20',$str);
+
+        //finally the same with the address
+        $str = explode(' ',$apicall['result']['formatted_address']);
+
+        //concat with %20 for the api call
+        $address = implode('%20',$str);
+
+        //i need the current place selected, just address component to select the info
+        $url = 'https://api.yelp.com/v3/businesses/matches/best';
+
+        //get params from the array
+        $data = array (
+            'name' => $name,
+            'city' => $city,
+            'state' => $state,
+            'country' => $country,
+            'address1' => $address
+            );
+            
+        $params = '';
+
+        //add the & to add it to the URL
+        foreach($data as $key=>$value)
+        {
+            $params .= $key.'='.$value.'&';
+        }
+             
+        $params = trim($params, '&');
+
+        //create the final url
+        $url = $url.'?'.$params;
+
+        $ch = curl_init($url);
+
+        curl_setopt_array($ch, array(
+            CURLOPT_HTTPHEADER  => array('Authorization: Bearer GRPzYDaNMFOoZ9TTltEmyUmBfdkHzAnqXWz5yG96xO6Cq5ZDtWs5ypctSfrkTDUbl1Mv0JHdbD2P7OTUOZRl-61_EzoxbYIk3-GMMD55LIBL8OG1SpSTrDHAwI3TWnYx'),
+            CURLOPT_RETURNTRANSFER  =>true,
+            CURLOPT_VERBOSE     => 1
+        ));
+
+        $resultmatch = curl_exec($ch);
+        curl_close($ch);
+
+        //with the results of the best match we search the info of review
+        $bestmatch = json_decode($resultmatch, true);
+
+        if(!empty($bestmatch['businesses']))
+        {   
+            $url = 'https://api.yelp.com/v3/businesses/'.$bestmatch['businesses'][0]['id'].'/reviews';
+
+            $ch = curl_init($url);
+
+            curl_setopt_array($ch, array(
+                CURLOPT_HTTPHEADER  => array('Authorization: Bearer GRPzYDaNMFOoZ9TTltEmyUmBfdkHzAnqXWz5yG96xO6Cq5ZDtWs5ypctSfrkTDUbl1Mv0JHdbD2P7OTUOZRl-61_EzoxbYIk3-GMMD55LIBL8OG1SpSTrDHAwI3TWnYx'),
+                CURLOPT_RETURNTRANSFER  =>true,
+                CURLOPT_VERBOSE     => 1
+            ));
+
+            $resultmatch = curl_exec($ch);
+            curl_close($ch);
+
+            echo $resultmatch;
+            return;
+        }
+        else
+        {
+            //return that its an empty response
+            $response = new stdClass();
+
+            $response->meta = 5;
+            $response->info = "no match found";
+
+            echo json_encode((array)$response);
+            return;
+        }
     }
 }
 
