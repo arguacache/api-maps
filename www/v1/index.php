@@ -4,7 +4,7 @@
 require_once "../../vendor/autoload.php";
 
 //api key for google maps
-$keymaps = "AIzaSyCsCBbEkLxSGhKjAsW4S0Q3LnNtvuxlliA";
+$keymaps = "AIzaSyAmGAnDU2nGdKJNUakIeLv7C2Stu_evfUE";
 
 if(isset($_GET['ajax']))
 {
